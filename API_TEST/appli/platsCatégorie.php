@@ -1,5 +1,5 @@
 <?php
-$plats = json_decode(file_get_contents("http://marchestp.alwaysdata.net/plats"));
+$plats = json_decode(file_get_contents("http://marchestp.alwaysdata.net/plats/".$_GET['nom']));
 
 
 ob_start();

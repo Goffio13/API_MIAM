@@ -1,10 +1,33 @@
+<?php
+session_start(); // Démarre la session
+
+// Vérifie si l'utilisateur est connecté
+if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+    // Redirige vers la page de connexion si l'utilisateur n'est pas connecté
+    header("Location: login.php");
+    exit();
+}
+
+if (isset($_POST['logout'])) {
+    // Détruire toutes les variables de session
+    session_unset();
+
+    // Détruire la session
+    session_destroy();
+
+    // Rediriger vers la page de connexion
+    header('Location: login.php');
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>API_MIAM</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
 </head>
 <body>
@@ -27,9 +50,14 @@
                         Ingrédients
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><a class="dropdown-item" href="#">Tomate</a></li>
-                        <li><a class="dropdown-item" href="#">Pomme de terre</a></li>
+                        <li><a class="dropdown-item" href="platsCatégorie.php?nom=tomate">Tomate</a></li>
+                        <li><a class="dropdown-item" href="platsCatégorie.php?nom=artichaut">Artichaut</a></li>
                     </ul>
+                    <li class="nav-item">
+                        <form action="template.php" method="POST">
+                        <a class="nav-link"> <button type="submit" name="logout">Déconnexion</button> </a>
+                        </form>
+                    </li>
                 </li>
             </ul>
         </div>

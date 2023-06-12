@@ -1,63 +1,91 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Page de connexion/inscription</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
-    }
-    
-    .container {
-      max-width: 400px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    }
-    
-    h2 {
-      text-align: center;
-    }
-    
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-    }
-    
-    button {
-      width: 100%;
-      padding: 10px;
-      background-color: #000;
-      color: #fff;
-      border: none;
-      border-radius: 3px;
-      cursor: pointer;
-    }
-    
-    .message {
-      margin-top: 10px;
-      text-align: center;
-      color: red;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Connexion</h2>
-    <form method="POST" action="login.php">
-      <input type="text" name="username" placeholder="Nom d'utilisateur" required>
-      <input type="password" name="password" placeholder="Mot de passe" required>
-      <button type="submit">Se connecter</button>
-    </form>
-    <button type="submit">S'inscrire</button>
+<?php
+session_start();
 
-  </div>
+if (isset($_SESSION['logged_in']) && $_SESSION['logged_in'] === true) {
+    header('Location: index.php');
+    exit();
+}
+
+if (isset($_POST['username']) && isset($_POST['password'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    // Connexion à la base de données
+    $hote = 'mysql-marchestp.alwaysdata.net';
+    $utilisateur = 'marchestp_';
+    $mdp = 'Conan13600_';
+    $nombdd = 'marchestp_bdd'; // Nom de la base de données
+
+    try {
+        $bdd = new PDO("mysql:host=$hote;dbname=$nombdd;charset=utf8", $utilisateur, $mdp);
+        $bdd->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        // Requête pour vérifier les informations d'identification
+        $requete = $bdd->prepare("SELECT * FROM utilisateur WHERE pseudo = ?");
+        $requete->execute([$username]);
+        $user = $requete->fetch(PDO::FETCH_ASSOC);
+
+
+        if ($user) {
+            $hashedPassword = $user['mdp']; // Récupérer le mot de passe haché de la base de données
+            // Appliquez le même processus de hachage sur le mot de passe fourni par l'utilisateur
+            $hashedInputPassword = hash('sha256', $password); 
+            // Comparez les mots de passe hashés
+            $isPasswordCorrect = $hashedInputPassword === $hashedPassword;
+
+
+            // Comparer le mot de passe fourni par l'utilisateur avec le mot de passe haché
+            if ($isPasswordCorrect) {
+                // Les informations d'identification sont correctes, l'utilisateur est connecté
+                $_SESSION['username'] = $user['pseudo'];
+                $_SESSION['logged_in'] = true;
+                header('Location: index.php');
+                exit();
+            } else {
+                // Mot de passe incorrect
+                $erreur = "Mot de passe incorrect";
+                echo($erreur);
+                exit();
+            }
+        } else {
+            // Utilisateur non trouvé
+            $erreur = "Utilisateur non trouvé";
+            echo($erreur);
+            exit();
+        }
+    } catch (PDOException $e) {
+        $erreur = "Erreur de connexion à la base de données : " . $e->getMessage();
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion</title>
+</head>
+
+<body>
+    <h1>Connexion</h1>
+    <?php if (isset($erreur)) : ?>
+        <p><?php echo $erreur; ?></p>
+    <?php endif; ?>
+
+    <form action="login.php" method="POST">
+        <label for="username">Pseudonyme :</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Mot de passe :</label>
+        <input type="password" id="password" name="password" required>
+
+        <button type="submit">Se connecter</button>
+    </form>
+
+    <a href="inscription.php">Inscription</a>
 </body>
+
 </html>
